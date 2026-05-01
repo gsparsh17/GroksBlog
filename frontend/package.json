@@ -1,0 +1,37 @@
+{
+  "name": "newsforge-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@google/genai": "^1.50.1",
+    "@google/generative-ai": "^0.24.1",
+    "axios": "^1.6.2",
+    "date-fns": "^3.0.6",
+    "dompurify": "^3.4.0",
+    "framer-motion": "^10.16.16",
+    "isomorphic-dompurify": "^3.9.0",
+    "js-cookie": "^3.0.5",
+    "lucide-react": "^0.303.0",
+    "next": "14.0.4",
+    "react": "^18",
+    "react-dom": "^18",
+    "react-hot-toast": "^2.4.1",
+    "react-quill": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "25.6.0",
+    "@types/react": "19.2.14",
+    "autoprefixer": "^10.0.1",
+    "eslint": "^8",
+    "eslint-config-next": "14.0.4",
+    "postcss": "^8",
+    "tailwindcss": "^3.3.0",
+    "typescript": "6.0.3"
+  }
+}
