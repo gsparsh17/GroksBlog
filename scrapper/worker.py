@@ -197,13 +197,16 @@ def run_scraper():
             print("Error:", e)
             time.sleep(10)
 
-# ---------------- START ----------------
-if __name__ == "__main__":
-    # start scraper thread
+# ---------------- START BACKGROUND THREAD ----------------
+def start_background():
     t = threading.Thread(target=run_scraper)
     t.daemon = True
     t.start()
 
-    # start flask server
+# Start immediately when app loads (IMPORTANT for gunicorn)
+start_background()
+
+# ---------------- LOCAL RUN ----------------
+if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
