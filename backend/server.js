@@ -53,15 +53,21 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
+// Parse JSON and urlencoded data
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Serve static files from uploads folder
 app.use('/uploads', express.static(uploadPath));
 
+// ======================
+// Routes
+// ======================
 app.use('/api/admin', authRoutes);
 app.use('/api/blogs', blogRoutes);
 app.use('/api/scraped_blogs', scrapedRoutes);
 
+// Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'NewsForge API running',
@@ -70,11 +76,17 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// ======================
+// Database Connection
+// ======================
 mongoose
   .connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/newsforge')
   .then(() => console.log('✅ MongoDB connected'))
   .catch((err) => console.error('❌ MongoDB error:', err));
 
+// ======================
+// Start Server
+// ======================
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {

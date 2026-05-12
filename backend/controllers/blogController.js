@@ -30,8 +30,48 @@ const deleteFromCloudinary = async (publicId) => {
 
 const normalizeTags = (tags) => {
   if (!tags) return [];
-  const tagArray = Array.isArray(tags) ? tags : tags.split(',');
-  return tagArray.map((t) => t.trim()).filter(Boolean);
+
+  let parsedTags = [];
+
+  try {
+    // Already array
+    if (Array.isArray(tags)) {
+      parsedTags = tags;
+    }
+
+    // JSON string array
+    else if (
+      typeof tags === 'string' &&
+      tags.trim().startsWith('[')
+    ) {
+      parsedTags = JSON.parse(tags);
+    }
+
+    // Normal string
+    else if (typeof tags === 'string') {
+      parsedTags = tags
+        .split(/[,\s]+/); // split by comma OR spaces
+    }
+
+    return parsedTags
+      .flatMap(tag =>
+        typeof tag === 'string'
+          ? tag.split(/[,\s]+/)
+          : []
+      )
+      .map(tag => tag.trim())
+      .filter(Boolean)
+      .map(tag =>
+        tag.startsWith('#') ? tag : `#${tag}`
+      )
+      .filter((tag, index, self) =>
+        self.indexOf(tag) === index
+      );
+
+  } catch (err) {
+    console.error('Tag normalization error:', err);
+    return [];
+  }
 };
 
 // GET all blogs (public)
@@ -122,7 +162,7 @@ const createBlog = async (req, res) => {
     res.status(201).json({ success: true, blog });
   } catch (error) {
     console.error('Create blog error:', error);
-    
+
     if (error.name === 'ValidationError') {
       const errors = Object.values(error.errors).map((e) => e.message);
       return res.status(400).json({ message: errors.join(', ') });
@@ -168,7 +208,7 @@ const updateBlog = async (req, res) => {
     res.json({ success: true, blog });
   } catch (error) {
     console.error('Update blog error:', error);
-    
+
     if (error.name === 'ValidationError') {
       const errors = Object.values(error.errors).map((e) => e.message);
       return res.status(400).json({ message: errors.join(', ') });

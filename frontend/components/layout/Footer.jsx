@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Zap, Github, Twitter, Linkedin, Mail, ArrowUpRight } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function Footer() {
   const categories = ['Technology', 'AI', 'Sports', 'Politics', 'Science', 'Business'];
@@ -19,20 +20,18 @@ export default function Footer() {
         <div className="py-12 sm:py-14 lg:py-16">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12">
             <div className="lg:col-span-5">
-              <Link href="/" className="inline-flex items-center gap-3 mb-5 group">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--accent)] text-white shadow-lg shadow-[var(--accent)]/15 transition-transform duration-200 group-hover:scale-[1.03]">
-                  <Zap size={18} className="fill-white" />
-                </div>
-
-                <div className="flex flex-col">
-                  <span className="font-display font-black text-2xl leading-none text-[var(--text-primary)]">
-                    Groks<span className="text-[var(--accent)]">Blog</span>
-                  </span>
-                  <span className="mt-1 text-[11px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
-                    Modern sports & world news
-                  </span>
-                </div>
-              </Link>
+            <Link href="/" className="flex items-center shrink-0 group">
+              <motion.div
+                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                className="flex items-center"
+              >
+                <img
+                  src="/logo1.png"
+                  alt="GroksBlog Logo"
+                  className="h-10 sm:h-48 w-auto object-contain"
+                />
+              </motion.div>
+            </Link>
 
               <p className="max-w-md text-sm sm:text-[15px] leading-7 text-[var(--text-muted)]">
                 Premium news, sharp analysis, and fast-moving updates designed for readers who want
@@ -127,7 +126,7 @@ export default function Footer() {
           <div className="mt-12 border-t border-[var(--border)] pt-5 sm:pt-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-xs text-[var(--text-muted)]">
-                © {new Date().getFullYear()} GroksBlog. Built with Next.js + MongoDB.
+                © {new Date().getFullYear()} GroksBlog. All rights reserved.
               </p>
 
               <p className="text-xs text-[var(--text-muted)]">

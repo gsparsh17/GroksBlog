@@ -189,17 +189,17 @@ export default function Navbar() {
   const tickerMotion = shouldReduceMotion
     ? {}
     : {
-        animate: { x: [0, -2000] },
-        transition: { repeat: Infinity, duration: 30, ease: 'linear' },
-      };
+      animate: { x: [0, -2000] },
+      transition: { repeat: Infinity, duration: 30, ease: 'linear' },
+    };
 
   const headerMotion = shouldReduceMotion
     ? {}
     : {
-        initial: { y: -40 },
-        animate: { y: 0 },
-        transition: { type: 'spring', stiffness: 180, damping: 28 },
-      };
+      initial: { y: -40 },
+      animate: { y: 0 },
+      transition: { type: 'spring', stiffness: 180, damping: 28 },
+    };
 
   return (
     <>
@@ -212,38 +212,32 @@ export default function Navbar() {
             BREAKING: Latest updates in AI, Technology, and World Affairs — Stay informed with
             GroksBlog&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;Top stories curated for you
             every hour — Never miss a beat&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;Global
-            coverage, local insights — NewsForge Premium Now Available
+            coverage, local insights — GroksBlog Premium Now Available
           </motion.span>
         </div>
       </div>
 
       <motion.header
-        className={`sticky top-0 z-50 border-b backdrop-blur-xl transition-all duration-300 ${
-          scrolled
+        className={`sticky top-0 z-50 border-b backdrop-blur-xl transition-all duration-300 ${scrolled
             ? 'bg-[var(--bg-primary)]/85 shadow-[0_8px_30px_rgba(0,0,0,0.08)] border-[var(--border)]'
             : 'bg-[var(--bg-primary)] border-[var(--border)]'
-        }`}
+          }`}
         {...headerMotion}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="h-16 sm:h-[72px] flex items-center justify-between gap-4">
-            <Link href="/" className="flex items-center gap-2.5 group shrink-0">
+            <Link href="/" className="flex items-center shrink-0 group">
               <motion.div
-                className="w-9 h-9 rounded-xl bg-[var(--accent)] flex items-center justify-center shadow-lg shadow-[var(--accent)]/15"
-                whileHover={shouldReduceMotion ? {} : { rotate: 8, scale: 1.06 }}
-                transition={{ type: 'spring', stiffness: 350, damping: 18 }}
+                whileHover={shouldReduceMotion ? {} : { scale: 1.03 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                className="flex items-center"
               >
-                <Zap size={16} className="text-white fill-white" />
+                <img
+                  src="/logo1.png"
+                  alt="GroksBlog Logo"
+                  className="h-10 sm:h-52 w-auto object-contain"
+                />
               </motion.div>
-
-              <div className="leading-none">
-                <span className="font-display font-black text-lg sm:text-xl tracking-tight text-[var(--text-primary)]">
-                  Groks<span className="text-[var(--accent)]">Blog</span>
-                </span>
-                <div className="hidden sm:block text-[10px] uppercase tracking-[0.18em] text-[var(--text-muted)] mt-1">
-                  News that moves fast
-                </div>
-              </div>
             </Link>
 
             <nav className="hidden md:flex items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--bg-secondary)] px-1.5 py-1">
@@ -255,11 +249,10 @@ export default function Navbar() {
                     key={link.href}
                     type="button"
                     onClick={() => navigateTo(link.href)}
-                    className={`relative rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                      active
+                    className={`relative rounded-full px-4 py-2 text-sm font-medium transition-colors ${active
                         ? 'bg-[var(--accent)] text-white'
                         : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card)]'
-                    }`}
+                      }`}
                   >
                     {link.label}
                   </button>
@@ -425,11 +418,10 @@ export default function Navbar() {
                       key={link.href}
                       type="button"
                       onClick={() => navigateTo(link.href)}
-                      className={`w-full flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-medium transition-colors ${
-                        active
+                      className={`w-full flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-medium transition-colors ${active
                           ? 'bg-[var(--accent)] text-white'
                           : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]'
-                      }`}
+                        }`}
                     >
                       <span>{link.label}</span>
                       <ChevronRight

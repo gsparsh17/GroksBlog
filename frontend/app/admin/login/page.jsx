@@ -128,7 +128,7 @@ export default function AdminLoginPage() {
         </div>
 
         <p className="text-center text-sm text-[var(--text-muted)] mt-6">
-          ← <a href="/" className="text-[var(--accent)] hover:underline">Back to NewsForge</a>
+          ← <a href="/" className="text-[var(--accent)] hover:underline">Back to GroksBlog</a>
         </p>
       </motion.div>
     </div>

@@ -1,10 +1,42 @@
 const express = require('express');
 const router = express.Router();
+const path = require('path');
+const multer = require('multer');
 const ScrapedNews = require('../models/ScrapedNews');
 const Blog = require('../models/Blog');
 const authMiddleware = require('../middleware/auth');
 
-// POST endpoint for your Python scraper to send data
+// ======================
+// Configure multer for file uploads
+// ======================
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/');
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname);
+    cb(null, 'scraped-' + uniqueSuffix + ext);
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|webp/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    if (mimetype && extname) {
+      return cb(null, true);
+    }
+    cb(new Error('Only image files are allowed (jpeg, jpg, png, webp)'));
+  }
+});
+
+// ======================
+// POST endpoint for Python scraper to send data
+// ======================
 router.post('/scraped/ingest', async (req, res) => {
   try {
     const { source, title, link, time, summary } = req.body;
@@ -60,7 +92,9 @@ router.post('/scraped/ingest', async (req, res) => {
   }
 });
 
+// ======================
 // GET all scraped news (for admin panel)
+// ======================
 router.get('/scraped', authMiddleware, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -100,7 +134,9 @@ router.get('/scraped', authMiddleware, async (req, res) => {
   }
 });
 
+// ======================
 // GET single scraped news
+// ======================
 router.get('/scraped/:id', authMiddleware, async (req, res) => {
   try {
     const scrapedNews = await ScrapedNews.findById(req.params.id);
@@ -114,36 +150,100 @@ router.get('/scraped/:id', authMiddleware, async (req, res) => {
   }
 });
 
-// UPDATED: Publish scraped news with custom content (AI enhanced)
-router.put('/publish/:id', authMiddleware, async (req, res) => {
+// ======================
+// UPDATE scraped news draft (save without publishing)
+// ======================
+router.put('/scraped/:id', authMiddleware, upload.single('image'), async (req, res) => {
   try {
+    console.log('📝 Updating scraped draft...');
+    console.log('Request body:', req.body);
+    console.log('Uploaded file:', req.file);
+    
     const scrapedNews = await ScrapedNews.findById(req.params.id);
     if (!scrapedNews) {
       return res.status(404).json({ message: 'News not found' });
     }
     
-    // Check if it's a FormData request with custom content
-    let title = scrapedNews.title;
-    let content = scrapedNews.summary || 'Full article: ' + scrapedNews.link;
-    let excerpt = scrapedNews.summary?.substring(0, 200) || scrapedNews.title;
-    let category = scrapedNews.category;
+    // Update fields if provided
+    if (req.body.title) scrapedNews.title = req.body.title;
+    if (req.body.content) scrapedNews.summary = req.body.content;
+    if (req.body.excerpt) scrapedNews.excerpt = req.body.excerpt;
+    if (req.body.category) scrapedNews.category = req.body.category;
+    
+    // Handle image
+    if (req.file) {
+      scrapedNews.image = `/uploads/${req.file.filename}`;
+    } else if (req.body.removeImage === 'true') {
+      scrapedNews.image = '';
+    }
+    
+    await scrapedNews.save();
+    
+    res.json({
+      success: true,
+      message: 'Draft saved successfully',
+      blog: scrapedNews
+    });
+  } catch (error) {
+    console.error('Error saving draft:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// ======================
+// PUBLISH scraped news with custom content (AI enhanced)
+// ======================
+router.put('/publish/:id', authMiddleware, upload.single('image'), async (req, res) => {
+  try {
+    console.log('📦 Publishing scraped news with content...');
+    console.log('Request body fields:', req.body);
+    console.log('Uploaded file:', req.file);
+    
+    const scrapedNews = await ScrapedNews.findById(req.params.id);
+    if (!scrapedNews) {
+      return res.status(404).json({ message: 'News not found' });
+    }
+    
+    // Extract data from FormData (req.body contains the text fields)
+    let title = req.body.title || scrapedNews.title;
+    let content = req.body.content || scrapedNews.summary || 'Full article: ' + scrapedNews.link;
+    let excerpt = req.body.excerpt || scrapedNews.summary?.substring(0, 200) || scrapedNews.title;
+    let category = req.body.category || scrapedNews.category;
+    let tags = [];
+    let featured = false;
     let image = scrapedNews.image || '';
     
-    // If custom data is provided in the request body (JSON)
-    if (req.body.title) {
-      title = req.body.title;
+    // Parse tags if provided
+    if (req.body.tags) {
+      try {
+        tags = typeof req.body.tags === 'string' ? JSON.parse(req.body.tags) : req.body.tags;
+      } catch (e) {
+        tags = [];
+      }
     }
-    if (req.body.content) {
-      content = req.body.content;
+    
+    // Parse featured flag
+    if (req.body.featured) {
+      featured = req.body.featured === 'true';
     }
-    if (req.body.excerpt) {
-      excerpt = req.body.excerpt;
-    }
-    if (req.body.category) {
-      category = req.body.category;
-    }
-    if (req.body.image) {
-      image = req.body.image;
+    
+    console.log('📝 Final content to publish:');
+    console.log('  - Title:', title);
+    console.log('  - Excerpt:', excerpt?.substring(0, 100) + '...');
+    console.log('  - Category:', category);
+    console.log('  - Tags:', tags);
+    console.log('  - Featured:', featured);
+    
+    // Handle image upload
+    if (req.file) {
+      image = `/uploads/${req.file.filename}`;
+      console.log('  - New image uploaded:', image);
+    } else if (req.body.removeImage === 'true') {
+      image = '';
+      console.log('  - Image removed');
+    } else if (req.body.existingImage) {
+      image = req.body.existingImage;
+      console.log('  - Keeping existing image:', image);
     }
     
     // Create a new blog post from scraped data with custom content
@@ -152,13 +252,17 @@ router.put('/publish/:id', authMiddleware, async (req, res) => {
       content: content,
       excerpt: excerpt,
       category: category,
+      tags: tags,
+      featured: featured,
       author: 'Admin',
       sourceName: scrapedNews.source,
       sourceUrl: scrapedNews.link,
       image: image,
       views: 0,
       isScraped: true,
-      originalScrapedId: scrapedNews._id
+      originalScrapedId: scrapedNews._id,
+      sourceType: 'scraped',
+      status: 'published'
     });
     
     await blog.save();
@@ -168,9 +272,11 @@ router.put('/publish/:id', authMiddleware, async (req, res) => {
     scrapedNews.publishedBlogId = blog._id;
     await scrapedNews.save();
     
+    console.log('✅ Article published successfully! ID:', blog._id);
+    
     res.json({
       success: true,
-      message: 'News published successfully',
+      message: 'News published successfully with AI enhancements! ✨',
       blog
     });
   } catch (error) {
@@ -179,7 +285,9 @@ router.put('/publish/:id', authMiddleware, async (req, res) => {
   }
 });
 
+// ======================
 // DELETE scraped news
+// ======================
 router.delete('/scraped/:id', authMiddleware, async (req, res) => {
   try {
     await ScrapedNews.findByIdAndDelete(req.params.id);
@@ -190,7 +298,9 @@ router.delete('/scraped/:id', authMiddleware, async (req, res) => {
   }
 });
 
+// ======================
 // Bulk ingest endpoint for multiple articles
+// ======================
 router.post('/scraped/bulk-ingest', async (req, res) => {
   try {
     const { articles } = req.body;

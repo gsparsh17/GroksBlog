@@ -24,17 +24,64 @@ const jetbrains = JetBrains_Mono({
 
 export const metadata = {
   title: {
-    default: 'NewsForge — Premium News & Insights',
-    template: '%s | NewsForge',
+    default: 'GroksBlog — Premium News & Insights',
+    template: '%s | GroksBlog',
   },
-  description: 'Cutting-edge news, analysis, and insights on technology, AI, politics, and more.',
-  keywords: ['news', 'technology', 'AI', 'politics', 'business', 'insights'],
+
+  description:
+    'Cutting-edge news, analysis, and insights on technology, AI, politics, and more.',
+
+  keywords: [
+    'news',
+    'technology',
+    'AI',
+    'politics',
+    'business',
+    'insights',
+  ],
+
+  icons: {
+    icon: [
+      { url: '/favicon.ico' },
+      { url: '/logo.png', type: 'image/png' },
+    ],
+    shortcut: '/favicon.ico',
+    apple: '/logo.png',
+  },
+
+  metadataBase: new URL('https://groksblog.com'),
+
+  openGraph: {
+    title: 'GroksBlog — Premium News & Insights',
+    description:
+      'Breaking updates in AI, Technology, Business, and World Affairs.',
+    siteName: 'GroksBlog',
+    images: [
+      {
+        url: '/logo.png',
+        width: 1200,
+        height: 630,
+        alt: 'GroksBlog',
+      },
+    ],
+    type: 'website',
+  },
+
+  twitter: {
+    card: 'summary_large_image',
+    title: 'GroksBlog',
+    description:
+      'Breaking updates in AI, Technology, Business, and World Affairs.',
+    images: ['/logo.png'],
+  },
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${playfair.variable} ${dmSans.variable} ${jetbrains.variable} font-body`}>
+      <body
+        className={`${playfair.variable} ${dmSans.variable} ${jetbrains.variable} font-body`}
+      >
         <Toaster
           position="top-right"
           toastOptions={{
@@ -46,6 +93,7 @@ export default function RootLayout({ children }) {
             },
           }}
         />
+
         {children}
       </body>
     </html>

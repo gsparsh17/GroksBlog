@@ -6,6 +6,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
+
 import {
   Upload,
   X,
@@ -20,21 +21,42 @@ import {
   Layers,
   Sparkles,
 } from 'lucide-react';
+
 import dynamic from 'next/dynamic';
+
 import AdminSidebar from '../admin/AdminSidebar';
-import { blogApi, CATEGORIES } from '../../lib/api';
+
+import {
+  blogApi,
+  CATEGORIES,
+} from '../../lib/api';
+
 import toast from 'react-hot-toast';
 
-const ReactQuill = dynamic(() => import('react-quill'), {
-  ssr: false,
-  loading: () => <div className="skeleton h-64 w-full rounded-xl" />,
-});
+const ReactQuill = dynamic(
+  () => import('react-quill'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="skeleton h-64 w-full rounded-xl" />
+    ),
+  }
+);
 
 const QUILL_MODULES = {
   toolbar: [
     [{ header: [1, 2, 3, false] }],
-    ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-    [{ list: 'ordered' }, { list: 'bullet' }],
+    [
+      'bold',
+      'italic',
+      'underline',
+      'strike',
+      'blockquote',
+    ],
+    [
+      { list: 'ordered' },
+      { list: 'bullet' },
+    ],
     ['link', 'image'],
     [{ color: [] }, { background: [] }],
     ['code-block'],
@@ -58,23 +80,44 @@ const QUILL_FORMATS = [
   'code-block',
 ];
 
-const getPlainTextFromHtml = (html = '') => {
+const getPlainTextFromHtml = (
+  html = ''
+) => {
   if (typeof window !== 'undefined') {
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    return (doc.body.textContent || '').replace(/\s+/g, ' ').trim();
+    const doc = new DOMParser().parseFromString(
+      html,
+      'text/html'
+    );
+
+    return (
+      doc.body.textContent || ''
+    )
+      .replace(/\s+/g, ' ')
+      .trim();
   }
 
-  return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  return html
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 };
 
-const isQuillEmpty = (html = '') => getPlainTextFromHtml(html).length === 0;
+const isQuillEmpty = (html = '') =>
+  getPlainTextFromHtml(html).length === 0;
 
-export default function BlogForm({ blogId }) {
+export default function BlogForm({
+  blogId,
+}) {
   const router = useRouter();
+
   const searchParams = useSearchParams();
+
   const fileRef = useRef(null);
+
   const isEdit = !!blogId;
-  const isFromScraped = searchParams.get('from') === 'scraped';
+
+  const isFromScraped =
+    searchParams.get('from') === 'scraped';
 
   const [form, setForm] = useState({
     title: '',
@@ -85,16 +128,35 @@ export default function BlogForm({ blogId }) {
     featured: false,
   });
 
-  const [originalForm, setOriginalForm] = useState(null);
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState('');
-  const [existingImage, setExistingImage] = useState('');
-  const [removeImage, setRemoveImage] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [loading, setLoading] = useState(isEdit);
-  const [activeTab, setActiveTab] = useState('content');
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiEnhanced, setAiEnhanced] = useState(false);
+  const [originalForm, setOriginalForm] =
+    useState(null);
+
+  const [imageFile, setImageFile] =
+    useState(null);
+
+  const [imagePreview, setImagePreview] =
+    useState('');
+
+  const [existingImage, setExistingImage] =
+    useState('');
+
+  const [removeImage, setRemoveImage] =
+    useState(false);
+
+  const [saving, setSaving] =
+    useState(false);
+
+  const [loading, setLoading] =
+    useState(isEdit);
+
+  const [activeTab, setActiveTab] =
+    useState('content');
+
+  const [aiLoading, setAiLoading] =
+    useState(false);
+
+  const [aiEnhanced, setAiEnhanced] =
+    useState(false);
 
   useEffect(() => {
     if (!isEdit) return;
@@ -102,61 +164,125 @@ export default function BlogForm({ blogId }) {
     const fetchBlog = async () => {
       try {
         const res = isFromScraped
-          ? await blogApi.getScrapedById(blogId)
+          ? await blogApi.getScrapedById(
+            blogId
+          )
           : await blogApi.getById(blogId);
 
-        const b = res.data.blog || res.data;
+        const b =
+          res.data.blog || res.data;
 
         setForm({
           title: b.title || '',
-          excerpt: b.excerpt || b.summary || '',
-          content: b.content || b.summary || '', // ✅ FIX HERE
-          category: b.category || 'Technology',
-          tags: Array.isArray(b.tags) ? b.tags.join(', ') : '',
+
+          excerpt:
+            b.excerpt ||
+            b.summary ||
+            '',
+
+          content:
+            b.content ||
+            b.summary ||
+            '',
+
+          category:
+            b.category ||
+            'Technology',
+
+          tags: Array.isArray(b.tags)
+            ? b.tags
+              .map((tag) =>
+                tag.replace(/^#/, '')
+              )
+              .join(', ')
+            : '',
+
           featured: !!b.featured,
         });
-        setExistingImage(b.image || '');
+
+        setExistingImage(
+          b.image || ''
+        );
+
         setRemoveImage(false);
       } catch {
-        toast.error('Failed to load post');
-        router.push('/admin/dashboard');
+        toast.error(
+          'Failed to load post'
+        );
+
+        router.push(
+          '/admin/dashboard'
+        );
       } finally {
         setLoading(false);
       }
     };
 
     fetchBlog();
-  }, [blogId, isEdit, router, isFromScraped]);
+  }, [
+    blogId,
+    isEdit,
+    router,
+    isFromScraped,
+  ]);
 
   useEffect(() => {
     return () => {
-      if (imagePreview) URL.revokeObjectURL(imagePreview);
+      if (imagePreview) {
+        URL.revokeObjectURL(
+          imagePreview
+        );
+      }
     };
   }, [imagePreview]);
 
   const handleImageChange = (e) => {
-    const file = e.target.files?.[0];
+    const file =
+      e.target.files?.[0];
+
     if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image must be under 5MB');
+    if (
+      file.size >
+      5 * 1024 * 1024
+    ) {
+      toast.error(
+        'Image must be under 5MB'
+      );
+
       return;
     }
 
-    if (imagePreview) URL.revokeObjectURL(imagePreview);
+    if (imagePreview) {
+      URL.revokeObjectURL(
+        imagePreview
+      );
+    }
 
     setImageFile(file);
-    setImagePreview(URL.createObjectURL(file));
+
+    setImagePreview(
+      URL.createObjectURL(file)
+    );
+
     setExistingImage('');
+
     setRemoveImage(false);
   };
 
   const handleRemoveImage = () => {
-    if (imagePreview) URL.revokeObjectURL(imagePreview);
+    if (imagePreview) {
+      URL.revokeObjectURL(
+        imagePreview
+      );
+    }
 
     setImageFile(null);
+
     setImagePreview('');
+
     setExistingImage('');
+
     setRemoveImage(true);
 
     if (fileRef.current) {
@@ -164,75 +290,157 @@ export default function BlogForm({ blogId }) {
     }
   };
 
+  // ✅ FIXED AI ENHANCEMENT
   const handleAiEnhance = async () => {
-    if (!form.title.trim() || isQuillEmpty(form.content) || aiLoading) {
+    if (
+      !form.title.trim() ||
+      isQuillEmpty(form.content) ||
+      aiLoading
+    ) {
       return;
     }
-    console.log("KEY:", process.env.GEMINI_API_KEY);
+
     setOriginalForm(form);
+
     setAiLoading(true);
 
     try {
-      const response = await blogApi.enhanceContent({
-        title: form.title,
-        excerpt: form.excerpt,
-        content: form.content,
-      });
+      const response =
+        await blogApi.enhanceContent({
+          title: form.title,
+          excerpt: form.excerpt,
+          content: form.content,
+        });
 
-      const data = response?.data;
+      // ✅ FIXED
+      const aiData =
+        response?.data?.data;
 
-      if (!data || typeof data !== 'object' || Array.isArray(data)) {
-        toast.error('Invalid AI response. Please try again.');
+      if (
+        !aiData ||
+        typeof aiData !== 'object'
+      ) {
+        toast.error(
+          'Invalid AI response'
+        );
+
         return;
       }
 
-      const { title, excerpt, content } = data;
+      const {
+        title,
+        excerpt,
+        content,
+        tags,
+      } = aiData;
 
-      if (!content || isQuillEmpty(content)) {
-        toast.error('AI did not return valid content.');
+      if (
+        !content ||
+        isQuillEmpty(content)
+      ) {
+        toast.error(
+          'AI did not return valid content.'
+        );
+
         return;
       }
+
+      // ✅ NORMALIZE TAGS
+      const normalizedTags =
+        Array.isArray(tags)
+          ? tags
+            .map((tag) =>
+              typeof tag ===
+                'string'
+                ? tag
+                  .replace(/^#/, '')
+                  .trim()
+                : ''
+            )
+            .filter(Boolean)
+            .join(', ')
+          : form.tags;
 
       setForm((prev) => ({
         ...prev,
-        title: title || prev.title,
-        excerpt: excerpt || prev.excerpt,
-        content: content || prev.content,
+
+        title:
+          title || prev.title,
+
+        excerpt:
+          excerpt ||
+          prev.excerpt,
+
+        content:
+          content ||
+          prev.content,
+
+        tags:
+          normalizedTags ||
+          prev.tags,
       }));
 
       setAiEnhanced(true);
-      toast.success('AI enhancement complete');
-    } catch {
-      toast.error('AI enhancement failed. Please try again.');
+
+      toast.success(
+        'AI enhancement complete ✨'
+      );
+    } catch (err) {
+      console.error(err);
+
+      toast.error(
+        err?.response?.data
+          ?.message ||
+        'AI enhancement failed'
+      );
     } finally {
       setAiLoading(false);
     }
   };
 
-  const handleUndoAiChanges = () => {
-    if (!originalForm) return;
+  const handleUndoAiChanges =
+    () => {
+      if (!originalForm) return;
 
-    setForm(originalForm);
-    setAiEnhanced(false);
-    setOriginalForm(null);
-    toast.success('AI changes reverted');
-  };
+      setForm(originalForm);
 
-  const handleSubmit = async (e) => {
+      setAiEnhanced(false);
+
+      setOriginalForm(null);
+
+      toast.success(
+        'AI changes reverted'
+      );
+    };
+
+  const handleSubmit = async (
+    e
+  ) => {
     e.preventDefault();
 
     if (!form.title.trim()) {
-      toast.error('Title is required');
+      toast.error(
+        'Title is required'
+      );
+
       return;
     }
 
     if (!form.excerpt.trim()) {
-      toast.error('Excerpt is required');
+      toast.error(
+        'Excerpt is required'
+      );
+
       return;
     }
 
-    if (isQuillEmpty(form.content)) {
-      toast.error('Content is required');
+    if (
+      isQuillEmpty(form.content)
+    ) {
+      toast.error(
+        'Content is required'
+      );
+
       return;
     }
 
@@ -241,54 +449,130 @@ export default function BlogForm({ blogId }) {
     try {
       const fd = new FormData();
 
-      const normalizedTags = form.tags
-        .split(',')
-        .map((tag) => tag.trim())
-        .filter(Boolean);
+      // ✅ FIXED TAGS
+      const normalizedTags =
+        form.tags
+          .split(',')
+          .map((tag) =>
+            tag.trim()
+          )
+          .filter(Boolean)
+          .map((tag) =>
+            tag.startsWith('#')
+              ? tag
+              : `#${tag}`
+          );
 
-      fd.append('title', form.title.trim());
-      fd.append('excerpt', form.excerpt.trim());
-      fd.append('content', form.content);
-      fd.append('category', form.category);
-      fd.append('tags', JSON.stringify(normalizedTags));
-      fd.append('featured', String(form.featured));
-      fd.append('removeImage', String(removeImage));
+      fd.append(
+        'title',
+        form.title.trim()
+      );
+
+      fd.append(
+        'excerpt',
+        form.excerpt.trim()
+      );
+
+      fd.append(
+        'content',
+        form.content
+      );
+
+      fd.append(
+        'category',
+        form.category
+      );
+
+      fd.append(
+        'tags',
+        JSON.stringify(
+          normalizedTags
+        )
+      );
+
+      fd.append(
+        'featured',
+        String(form.featured)
+      );
+
+      fd.append(
+        'removeImage',
+        String(removeImage)
+      );
 
       if (imageFile) {
-        fd.append('image', imageFile);
+        fd.append(
+          'image',
+          imageFile
+        );
       }
 
       if (isEdit) {
-        await blogApi.update(blogId, fd);
-        toast.success('Post updated!');
+        await blogApi.update(
+          blogId,
+          fd
+        );
+
+        toast.success(
+          'Post updated!'
+        );
       } else {
         await blogApi.create(fd);
-        toast.success('Post published!');
+
+        toast.success(
+          'Post published!'
+        );
       }
 
-      router.push('/admin/dashboard');
+      router.push(
+        '/admin/dashboard'
+      );
     } catch (err) {
-      toast.error(err?.response?.data?.message || 'Save failed');
+      toast.error(
+        err?.response?.data
+          ?.message ||
+        'Save failed'
+      );
     } finally {
       setSaving(false);
     }
   };
 
-  const currentImage = imagePreview || existingImage || '';
-  const plainTextContent = getPlainTextFromHtml(form.content);
-  const wordCount = plainTextContent
-    ? plainTextContent.split(/\s+/).filter(Boolean).length
-    : 0;
+  const currentImage =
+    imagePreview ||
+    existingImage ||
+    '';
+
+  const plainTextContent =
+    getPlainTextFromHtml(
+      form.content
+    );
+
+  const wordCount =
+    plainTextContent
+      ? plainTextContent
+        .split(/\s+/)
+        .filter(Boolean).length
+      : 0;
+
   const isAiButtonDisabled =
-    !form.title.trim() || isQuillEmpty(form.content) || aiLoading;
+    !form.title.trim() ||
+    isQuillEmpty(form.content) ||
+    aiLoading;
 
   if (loading) {
     return (
       <div className="flex min-h-screen bg-[var(--bg-primary)]">
         <AdminSidebar />
+
         <div className="flex-1 p-8 space-y-4">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="skeleton h-14 rounded-xl" />
+          {Array.from({
+            length: 5,
+          }).map((_, i) => (
+            <div
+              key={i}
+              className="skeleton h-14 rounded-xl"
+            />
           ))}
         </div>
       </div>
@@ -347,8 +631,8 @@ export default function BlogForm({ blogId }) {
                 type="button"
                 onClick={() => setActiveTab(tab)}
                 className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${activeTab === tab
-                    ? 'bg-[var(--accent)]/10 text-[var(--accent)]'
-                    : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+                  ? 'bg-[var(--accent)]/10 text-[var(--accent)]'
+                  : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
                   }`}
               >
                 {tab === 'content' ? (
@@ -432,8 +716,8 @@ export default function BlogForm({ blogId }) {
                         onClick={handleAiEnhance}
                         disabled={isAiButtonDisabled}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${isAiButtonDisabled
-                            ? 'text-[var(--text-muted)] cursor-not-allowed'
-                            : 'text-[var(--accent)] hover:bg-[var(--accent)]/10 hover:text-[var(--accent)]/90'
+                          ? 'text-[var(--text-muted)] cursor-not-allowed'
+                          : 'text-[var(--accent)] hover:bg-[var(--accent)]/10 hover:text-[var(--accent)]/90'
                           }`}
                         whileHover={isAiButtonDisabled ? {} : { scale: 1.05 }}
                         whileTap={isAiButtonDisabled ? {} : { scale: 0.95 }}

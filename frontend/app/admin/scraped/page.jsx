@@ -74,7 +74,7 @@ export default function ScrapedPage() {
     setCurrentPage(1);
   };
 
-  // DELETE FUNCTION - Only delete, no publish here
+  // DELETE FUNCTION
   const handleDelete = async (id) => {
     if (!confirm('Are you sure you want to delete this article?')) return;
     
@@ -144,7 +144,7 @@ export default function ScrapedPage() {
                 Scraped News
               </h1>
               <p className="text-sm text-[var(--text-muted)]">
-                Review scraped articles from Hindustan Times & Indian Express
+                Review, edit, and publish scraped articles from Hindustan Times & Indian Express
               </p>
             </div>
             
@@ -313,13 +313,13 @@ export default function ScrapedPage() {
                         </div>
                       </div>
 
-                      {/* Actions - Only View and Delete */}
+                      {/* Actions - View (Edit/Publish) and Delete */}
                       <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                        {/* View/Preview Button */}
-                        <Link href={`/admin/edit/${blog._id}?from=scraped`}>
+                        {/* View/Edit Button - NOW POINTS TO CORRECT SCRAPED DETAIL PAGE */}
+                        <Link href={`/admin/scraped/${blog._id}`}>
                           <button 
                             className="p-2 rounded-lg hover:bg-[var(--accent)]/10 transition-colors"
-                            title="View Details"
+                            title="Edit & Publish Article"
                           >
                             <Eye size={16} />
                           </button>

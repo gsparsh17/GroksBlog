@@ -27,6 +27,7 @@ export default function BlogDetailPage() {
       try {
         const res = await blogApi.getById(id);
         const fetchedBlog = res.data.blog;
+        console.log('Fetched blog:', fetchedBlog);
         setBlog(fetchedBlog);
 
         const rel = await blogApi.getAll({ category: fetchedBlog.category, limit: 3 });
@@ -226,10 +227,10 @@ export default function BlogDetailPage() {
           {/* Author */}
           <div className="my-10 p-6 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border)] flex items-center gap-5">
             <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[var(--accent)] to-orange-600 flex items-center justify-center text-white font-bold text-xl shrink-0">
-              NF
+              GB
             </div>
             <div>
-              <p className="font-semibold text-[var(--text-primary)]">NewsForge Editorial</p>
+              <p className="font-semibold text-[var(--text-primary)]">GroksBlog Editorial</p>
               <p className="text-sm text-[var(--text-muted)] mt-0.5">
                 Covering technology, AI, and global affairs — curated for the curious mind.
               </p>

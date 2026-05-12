@@ -39,8 +39,14 @@ api.interceptors.response.use(
 );
 
 export const blogApi = {
+  // Regular blog CRUD
   getAll: (params) => api.get('/blogs', { params }),
   getById: (id) => api.get(`/blogs/${id}`),
+  getBySlug: (slug) => api.get(`/blogs/slug/${slug}`),
+  getFeatured: () => api.get('/blogs/featured/list'),
+  getByCategory: (category) => api.get(`/blogs/category/${category}`),
+  getRelated: (id) => api.get(`/blogs/${id}/related`),
+  getStats: () => api.get('/blogs/stats'),
 
   create: (formData) =>
     api.post('/blogs', formData, {
@@ -53,27 +59,46 @@ export const blogApi = {
     }),
 
   delete: (id) => api.delete(`/blogs/${id}`),
-  getStats: () => api.get('/blogs/stats'),
+  toggleFeatured: (id) => api.patch(`/blogs/${id}/toggle-featured`),
 
-  // ✅ ADD THIS
+  // AI Enhancement
   enhanceContent: (data) => api.post('/blogs/ai-enhance', data),
 
+  // ==================== SCRAPED NEWS API ====================
+  
+  // Get all scraped news (paginated with search)
   getScraped: (page = 1, limit = 20, search = '') =>
     api.get('/scraped_blogs/scraped', { params: { page, limit, search } }),
-
-  publishScraped: (id) => api.put(`/scraped_blogs/publish/${id}`),
-  deleteScraped: (id) => api.delete(`/scraped_blogs/scraped/${id}`),
+  
+  // Get single scraped news by ID
   getScrapedById: (id) => api.get(`/scraped_blogs/scraped/${id}`),
-
+  
+  // ✅ UPDATE scraped news draft (save without publishing)
+  updateScraped: (id, formData) =>
+    api.put(`/scraped_blogs/scraped/${id}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+  
+  // Publish scraped news (simple - no custom content)
+  publishScraped: (id) => api.put(`/scraped_blogs/publish/${id}`),
+  
+  // ✅ PUBLISH scraped news WITH custom content (AI enhanced)
   publishScrapedWithData: (id, formData) =>
     api.put(`/scraped_blogs/publish/${id}`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
+  
+  // Delete scraped news
+  deleteScraped: (id) => api.delete(`/scraped_blogs/scraped/${id}`),
+  
+  // Bulk ingest scraped articles
+  bulkIngest: (articles) => api.post('/scraped_blogs/scraped/bulk-ingest', { articles }),
 };
 
 export const authApi = {
   login: (username, password) => api.post('/admin/login', { username, password }),
   verify: () => api.get('/admin/verify'),
+  logout: () => api.post('/admin/logout'),
 };
 
 export const CATEGORIES = [
@@ -104,14 +129,17 @@ export const CATEGORY_COLORS = {
 export const getImageUrl = (imagePath) => {
   if (!imagePath) return "";
 
+  // If it's already a full URL
   if (imagePath.startsWith("http")) {
     return imagePath;
   }
 
+  // If it's a local upload
   if (imagePath.startsWith("/uploads/")) {
     return `${API_URL}${imagePath}`;
   }
 
+  // If it's a Cloudinary public ID
   if (!CLOUDINARY_CLOUD_NAME) {
     console.error("Cloudinary cloud name missing");
     return "";
@@ -121,3 +149,6 @@ export const getImageUrl = (imagePath) => {
 
   return `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/f_auto,q_auto/${normalizedId}`;
 };
+
+// Default export
+export default api;
