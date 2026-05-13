@@ -257,7 +257,7 @@ function HomeContent() {
                           </p>
 
                           <div className="flex flex-wrap items-center gap-4 sm:gap-5">
-                            <span className="inline-flex items-center gap-2 rounded-full bg-white text-[var(--text-primary)] px-5 py-3 text-sm font-semibold transition-transform duration-200 group-hover:translate-x-1">
+                            <span className="inline-flex items-center gap-2 rounded-full bg-white text-black px-5 py-3 text-sm font-semibold transition-transform duration-200 group-hover:translate-x-1">
                               Read Full Story
                               <ArrowRight size={16} />
                             </span>
