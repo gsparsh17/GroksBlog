@@ -218,7 +218,7 @@ export default function BlogDetailPage() {
                   key={tag} 
                   className="text-xs font-medium px-3 py-1 rounded-full bg-[var(--bg-secondary)] text-[var(--text-secondary)] border border-[var(--border)] hover:border-[var(--accent)]/30 hover:text-[var(--accent)] transition-colors cursor-default"
                 >
-                  #{tag}
+                  {tag}
                 </span>
               ))}
             </div>
