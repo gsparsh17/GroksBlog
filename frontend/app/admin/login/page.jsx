@@ -75,7 +75,7 @@ export default function AdminLoginPage() {
               <Zap size={28} className="text-white fill-white" />
             </motion.div>
             <h1 className="font-display font-black text-2xl text-[var(--text-primary)]">
-              News<span className="text-[var(--accent)]">Forge</span>
+              Groks<span className="text-[var(--accent)]">Blog</span>
             </h1>
             <p className="text-sm text-[var(--text-muted)] mt-1">Admin Control Center</p>
           </div>

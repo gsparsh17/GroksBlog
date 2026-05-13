@@ -4,7 +4,8 @@ const scrapedNewsSchema = new mongoose.Schema({
   source: {
     type: String,
     required: true,
-    enum: ['Hindustan Times', 'Indian Express']
+    // Remove enum restriction to allow any source
+    // enum: ['Hindustan Times', 'Indian Express']
   },
   title: {
     type: String,
@@ -30,6 +31,10 @@ const scrapedNewsSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  author: {
+    type: String,
+    default: 'News Desk'
+  },
   isPublished: {
     type: Boolean,
     default: false
@@ -48,5 +53,7 @@ const scrapedNewsSchema = new mongoose.Schema({
 
 // Create index for better search performance
 scrapedNewsSchema.index({ title: 'text', summary: 'text' });
+scrapedNewsSchema.index({ source: 1 });
+scrapedNewsSchema.index({ category: 1 });
 
 module.exports = mongoose.model('ScrapedNews', scrapedNewsSchema);

@@ -2,6 +2,7 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const SCRAPER_URL = process.env.NEXT_PUBLIC_SCRAPER_URL || 'http://localhost:10000';
 const CLOUDINARY_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
 
 const api = axios.create({
@@ -73,7 +74,7 @@ export const blogApi = {
   // Get single scraped news by ID
   getScrapedById: (id) => api.get(`/scraped_blogs/scraped/${id}`),
   
-  // ✅ UPDATE scraped news draft (save without publishing)
+  // UPDATE scraped news draft (save without publishing)
   updateScraped: (id, formData) =>
     api.put(`/scraped_blogs/scraped/${id}`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
@@ -82,7 +83,7 @@ export const blogApi = {
   // Publish scraped news (simple - no custom content)
   publishScraped: (id) => api.put(`/scraped_blogs/publish/${id}`),
   
-  // ✅ PUBLISH scraped news WITH custom content (AI enhanced)
+  // PUBLISH scraped news WITH custom content (AI enhanced)
   publishScrapedWithData: (id, formData) =>
     api.put(`/scraped_blogs/publish/${id}`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
@@ -101,8 +102,96 @@ export const authApi = {
   logout: () => api.post('/admin/logout'),
 };
 
+// ==================== SCRAPER API (Python Service) ====================
+export const scraperApi = {
+  // Trigger manual scrape and sync
+  triggerScrape: async () => {
+    try {
+      const response = await fetch(`${SCRAPER_URL}/scrape-now`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error triggering scraper:', error);
+      throw error;
+    }
+  },
+  
+  // Check scraper health
+  checkHealth: async () => {
+    try {
+      const response = await fetch(`${SCRAPER_URL}/health`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Scraper health check failed:', error);
+      return { status: 'error', message: error.message };
+    }
+  },
+  
+  // Get debug info from scraper
+  getDebugInfo: async () => {
+    try {
+      const response = await fetch(`${SCRAPER_URL}/debug`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error getting debug info:', error);
+      throw error;
+    }
+  },
+  
+  // Reset scraper cache
+  resetCache: async () => {
+    try {
+      const response = await fetch(`${SCRAPER_URL}/reset-cache`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error resetting cache:', error);
+      throw error;
+    }
+  },
+};
+
 export const CATEGORIES = [
   'All',
+  'Automobile',
   'Technology',
   'AI',
   'Sports',
@@ -115,6 +204,7 @@ export const CATEGORIES = [
 ];
 
 export const CATEGORY_COLORS = {
+  Automobile: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
   Technology: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
   AI: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
   Sports: 'bg-green-500/10 text-green-400 border-green-500/20',

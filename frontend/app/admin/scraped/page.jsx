@@ -17,16 +17,19 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-  CheckCircle
+  CheckCircle,
+  Loader2,
+  Download
 } from 'lucide-react';
 
 import AdminSidebar from '../../../components/admin/AdminSidebar';
-import { CATEGORY_COLORS, getImageUrl, blogApi } from '../../../lib/api';
+import { CATEGORY_COLORS, getImageUrl, blogApi, scraperApi } from '../../../lib/api';
 import toast from 'react-hot-toast';
 
 export default function ScrapedPage() {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [deleting, setDeleting] = useState(null);
@@ -57,6 +60,32 @@ export default function ScrapedPage() {
       toast.error('Failed to fetch scraped articles');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // MANUAL SCRAPE & SYNC FUNCTION
+  const handleManualSync = async () => {
+    setSyncing(true);
+    toast.loading('Starting manual scrape and sync...', { id: 'scrape-sync' });
+    
+    try {
+      // Call the scraper's /scrape-now endpoint
+      const response = await scraperApi.triggerScrape();
+      
+      if (response.status === 'success') {
+        toast.success('Scrape and sync completed successfully!', { id: 'scrape-sync' });
+        // Refresh the page to show new articles
+        setTimeout(() => {
+          fetchScrapedBlogs();
+        }, 2000);
+      } else {
+        toast.error(response.message || 'Scrape failed', { id: 'scrape-sync' });
+      }
+    } catch (err) {
+      console.error('Error during manual sync:', err);
+      toast.error(err.response?.data?.message || 'Failed to trigger scrape. Make sure the scraper service is running.', { id: 'scrape-sync' });
+    } finally {
+      setSyncing(false);
     }
   };
 
@@ -144,18 +173,40 @@ export default function ScrapedPage() {
                 Scraped News
               </h1>
               <p className="text-sm text-[var(--text-muted)]">
-                Review, edit, and publish scraped articles from Hindustan Times & Indian Express
+                Review, edit, and publish scraped articles from various sources
               </p>
             </div>
             
-            <button
-              onClick={handleRefresh}
-              disabled={loading}
-              className="flex items-center gap-2 px-4 py-2 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg hover:bg-[var(--bg-hover)] transition-colors"
-            >
-              <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
-              <span className="text-sm">Refresh</span>
-            </button>
+            <div className="flex items-center gap-3">
+              {/* Manual Scrape & Sync Button */}
+              <button
+                onClick={handleManualSync}
+                disabled={syncing}
+                className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition-colors disabled:opacity-50"
+              >
+                {syncing ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    <span className="text-sm">Syncing...</span>
+                  </>
+                ) : (
+                  <>
+                    <Download size={16} />
+                    <span className="text-sm">Manual Scrape & Sync</span>
+                  </>
+                )}
+              </button>
+              
+              {/* Refresh Button */}
+              <button
+                onClick={handleRefresh}
+                disabled={loading}
+                className="flex items-center gap-2 px-4 py-2 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg hover:bg-[var(--bg-hover)] transition-colors"
+              >
+                <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+                <span className="text-sm">Refresh</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -184,7 +235,7 @@ export default function ScrapedPage() {
                 <Zap size={18} className="text-purple-400" />
                 <span className="text-sm text-[var(--text-muted)]">Auto Source</span>
               </div>
-              <div className="text-sm font-semibold">HT + Indian Express</div>
+              <div className="text-sm font-semibold">BikeDekho | RushLane | Indian Express</div>
             </div>
 
             <div className="bg-[var(--bg-card)] p-5 rounded-2xl border border-[var(--border)]">
@@ -242,8 +293,16 @@ export default function ScrapedPage() {
                 <FileText size={40} className="mx-auto opacity-40 mb-3" />
                 <p className="text-[var(--text-muted)] mb-2">No scraped articles found</p>
                 <p className="text-xs text-[var(--text-muted)]">
-                  {search ? 'Try a different search term' : 'Make sure your Python scraper is running and sending data to the backend'}
+                  {search ? 'Try a different search term' : 'Click "Manual Scrape & Sync" to fetch latest articles from sources'}
                 </p>
+                <button
+                  onClick={handleManualSync}
+                  disabled={syncing}
+                  className="mt-4 inline-flex items-center gap-2 px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition-colors"
+                >
+                  {syncing ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+                  <span>Scrape Now</span>
+                </button>
               </div>
             ) : (
               <>
@@ -315,7 +374,7 @@ export default function ScrapedPage() {
 
                       {/* Actions - View (Edit/Publish) and Delete */}
                       <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                        {/* View/Edit Button - NOW POINTS TO CORRECT SCRAPED DETAIL PAGE */}
+                        {/* View/Edit Button */}
                         <Link href={`/admin/scraped/${blog._id}`}>
                           <button 
                             className="p-2 rounded-lg hover:bg-[var(--accent)]/10 transition-colors"
