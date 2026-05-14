@@ -31,6 +31,7 @@ const blogSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Category is required'],
       enum: [
+        'Automobile',
         'Technology',
         'AI',
         'Sports',
