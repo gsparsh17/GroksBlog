@@ -248,13 +248,9 @@ function HomeContent() {
                             </span>
                           </div>
 
-                          <h1 className="font-display font-black text-3xl sm:text-4xl lg:text-5xl text-white leading-[1.05] max-w-4xl mb-4">
+                          <h1 className="font-display font-black text-2xl sm:text-2xl lg:text-3xl text-white leading-[1.05] max-w-4xl mb-4">
                             {featured.title}
                           </h1>
-
-                          <p className="text-white/78 text-sm sm:text-base lg:text-lg leading-relaxed line-clamp-3 max-w-2xl mb-6">
-                            {featured.excerpt}
-                          </p>
 
                           <div className="flex flex-wrap items-center gap-4 sm:gap-5">
                             <span className="inline-flex items-center gap-2 rounded-full bg-white text-black px-5 py-3 text-sm font-semibold transition-transform duration-200 group-hover:translate-x-1">
